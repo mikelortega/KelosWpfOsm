@@ -12,12 +12,21 @@ namespace MapTest
         {
             InitializeComponent();
 
+            Path p = BezierPath(new Point(0,0), new Point(1600, 0), new Point(-800, 450), new Point(800, 450), Brushes.Red);
+            MainCanvas.Children.Add(p);
+
+            p = BezierPath(new Point(0, 0), new Point(0, 450), new Point(800, 0), new Point(800, 450), Brushes.Blue);
+            MainCanvas.Children.Add(p);
+        }
+
+        private Path BezierPath(Point p0, Point p1, Point p2, Point p3, Brush brush)
+        {
             PathFigure pathFigure = new PathFigure();
-            pathFigure.StartPoint = new Point(0, 0);
+            pathFigure.StartPoint = p0;
             BezierSegment bezier = new BezierSegment();
-            bezier.Point1 = new Point(100, 300);
-            bezier.Point2 = new Point(500, 500);
-            bezier.Point3 = new Point(300, 200);
+            bezier.Point1 = p1;
+            bezier.Point2 = p2;
+            bezier.Point3 = p3;
 
             PathSegmentCollection psc = new PathSegmentCollection();
             psc.Add(bezier);
@@ -27,10 +36,10 @@ namespace MapTest
             pathgeom.Figures.Add(pathFigure);
 
             Path p = new Path();
-            p.Stroke = Brushes.Red;
+            p.Stroke = brush;
             p.Data = pathgeom;
 
-            MainCanvas.Children.Add(p);
+            return p;
         }
 
         double ScaleRate = 1.1;
@@ -41,26 +50,41 @@ namespace MapTest
             else if (rt.ScaleX > 1.0)
                 rt.ScaleX = rt.ScaleY /= ScaleRate;
 
-            sv.ScrollToHorizontalOffset(e.GetPosition(sv).X);
-            sv.ScrollToVerticalOffset(e.GetPosition(sv).Y);
+            e.GetPosition(MainCanvas);
+
+            double MiddleWidth = e.GetPosition(MainCanvas).X / MainCanvas.RenderSize.Width;
+            double MiddleHeight = e.GetPosition(MainCanvas).Y / MainCanvas.RenderSize.Height;
+
+            scroller.ScrollToHorizontalOffset(scroller.ScrollableWidth * 0.5);// * MiddleWidth);
+            scroller.ScrollToVerticalOffset(scroller.ScrollableHeight * 0.5);// * MiddleHeight);
+
+            kk0.Content = e.GetPosition(MainCanvas);
+            kk1.Content = MainCanvas.RenderSize;
         }
 
         Point MiddleMousePressPoint;
 
-        private void Sv_MouseMove(object sender, MouseEventArgs e)
+        private void Scroller_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.MiddleButton == MouseButtonState.Pressed)
+                MiddleMousePressPoint = e.GetPosition(scroller);
+        }
+
+        private void Scroller_MouseMove(object sender, MouseEventArgs e)
+        {
+            Cursor = Cursors.Arrow;
+            if (e.MiddleButton == MouseButtonState.Pressed)
             {
-                sv.ScrollToHorizontalOffset(sv.HorizontalOffset + MiddleMousePressPoint.X - e.GetPosition(sv).X);
-                sv.ScrollToVerticalOffset(sv.VerticalOffset + MiddleMousePressPoint.Y - e.GetPosition(sv).Y);
-                MiddleMousePressPoint = e.GetPosition(sv);
+                scroller.ScrollToHorizontalOffset(scroller.HorizontalOffset + MiddleMousePressPoint.X - e.GetPosition(scroller).X);
+                scroller.ScrollToVerticalOffset(scroller.VerticalOffset + MiddleMousePressPoint.Y - e.GetPosition(scroller).Y);
+                MiddleMousePressPoint = e.GetPosition(scroller);
+                Cursor = Cursors.ScrollAll;
             }
         }
 
-        private void Sv_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Scroller_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.MiddleButton == MouseButtonState.Pressed)
-                MiddleMousePressPoint = e.GetPosition(sv);
+            Cursor = Cursors.Arrow;
         }
     }
 
