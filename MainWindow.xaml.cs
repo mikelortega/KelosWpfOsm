@@ -20,7 +20,8 @@ namespace MapTest
 
             KelosOSM kosm = new KelosOSM();
             kosm.LoadFile("../../Donostia.osm");
-            kosm.AddPointsToCanvas(MainCanvas);
+            //kosm.AddPointsToCanvas(MainCanvas);
+            kosm.CreateBuildings(MainCanvas);
         }
 
         private Path BezierPath(Point p0, Point p1, Point p2, Point p3, Brush brush)
