@@ -12,11 +12,15 @@ namespace MapTest
         {
             InitializeComponent();
 
-            Path p = BezierPath(new Point(0,0), new Point(1600, 0), new Point(-800, 450), new Point(800, 450), Brushes.Red);
-            MainCanvas.Children.Add(p);
+            //Path p = BezierPath(new Point(0,0), new Point(1600, 0), new Point(-800, 450), new Point(800, 450), Brushes.Red);
+            //MainCanvas.Children.Add(p);
 
-            p = BezierPath(new Point(0, 0), new Point(0, 450), new Point(800, 0), new Point(800, 450), Brushes.Blue);
-            MainCanvas.Children.Add(p);
+            //p = BezierPath(new Point(0, 0), new Point(0, 450), new Point(800, 0), new Point(800, 450), Brushes.Blue);
+            //MainCanvas.Children.Add(p);
+
+            KelosOSM kosm = new KelosOSM();
+            kosm.LoadFile("../../Donostia.osm");
+            kosm.AddPointsToCanvas(MainCanvas);
         }
 
         private Path BezierPath(Point p0, Point p1, Point p2, Point p3, Brush brush)
@@ -46,36 +50,24 @@ namespace MapTest
         {
             const double ScaleRate = 1.1;
 
-            Point mouseAtImage = e.GetPosition(MainCanvas);
+            Point mouseAtMainCanvas = e.GetPosition(MainCanvas);
             Point mouseAtScrollViewer = e.GetPosition(MainScrollViewer);
 
             ScaleTransform st = MainCanvas.LayoutTransform as ScaleTransform;
-            if (st == null)
-            {
-                st = new ScaleTransform();
-                MainCanvas.LayoutTransform = st;
-            }
 
-            if (e.Delta > 0)
-            {
+            if (e.Delta > 0 && st.ScaleX < 64)
                 st.ScaleX = st.ScaleY = st.ScaleX * ScaleRate;
-                if (st.ScaleX > 64) st.ScaleX = st.ScaleY = 64;
-            }
-            else
-            {
+            else if (st.ScaleX > 1)
                 st.ScaleX = st.ScaleY = st.ScaleX / ScaleRate;
-                if (st.ScaleX < 1) st.ScaleX = st.ScaleY = 1;
-            }
-            #region [this step is critical for offset]
+
             MainScrollViewer.ScrollToHorizontalOffset(0);
             MainScrollViewer.ScrollToVerticalOffset(0);
-            this.UpdateLayout();
-            #endregion
+            UpdateLayout();
 
-            Vector offset = MainCanvas.TranslatePoint(mouseAtImage, MainScrollViewer) - mouseAtScrollViewer;
+            Vector offset = MainCanvas.TranslatePoint(mouseAtMainCanvas, MainScrollViewer) - mouseAtScrollViewer;
             MainScrollViewer.ScrollToHorizontalOffset(offset.X);
             MainScrollViewer.ScrollToVerticalOffset(offset.Y);
-            this.UpdateLayout();
+            UpdateLayout();
 
             e.Handled = true;
         }
