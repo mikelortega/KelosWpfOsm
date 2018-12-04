@@ -7,14 +7,12 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="568" Width="966">
     <Grid>
-        <ScrollViewer x:Name="scroller" Margin="10" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#FFFFE386" MouseMove="Scroller_MouseMove" MouseDown="Scroller_MouseDown" PanningMode="Both" MouseUp="Scroller_MouseUp">
+        <ScrollViewer x:Name="MainScrollViewer" Margin="10" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#FFFFE386" MouseMove="MainScrollViewer_MouseMove" MouseDown="MainScrollViewer_MouseDown" PanningMode="Both" MouseUp="MainScrollViewer_MouseUp">
             <Canvas x:Name="MainCanvas" HorizontalAlignment="Center" Height="450" VerticalAlignment="Center" Width="800" Background="#FFEED6D6" MouseWheel="MainCanvas_MouseWheel" Margin="0">
                 <Canvas.LayoutTransform>
                     <ScaleTransform x:Name="rt"/>
                 </Canvas.LayoutTransform>
             </Canvas>
         </ScrollViewer>
-        <Label x:Name="kk0" Content="kkk" HorizontalAlignment="Left" Margin="3,21,0,0" VerticalAlignment="Top" Height="37" Width="420"/>
-        <Label x:Name="kk1" Content="kkk" HorizontalAlignment="Left" Margin="3,58,0,0" VerticalAlignment="Top" Height="37" Width="420"/>
     </Grid>
 </Window>

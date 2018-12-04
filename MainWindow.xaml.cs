@@ -42,50 +42,69 @@ namespace MapTest
             return p;
         }
 
-        double ScaleRate = 1.1;
         void MainCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
+            const double ScaleRate = 1.1;
+
+            Point mouseAtImage = e.GetPosition(MainCanvas);
+            Point mouseAtScrollViewer = e.GetPosition(MainScrollViewer);
+
+            ScaleTransform st = MainCanvas.LayoutTransform as ScaleTransform;
+            if (st == null)
+            {
+                st = new ScaleTransform();
+                MainCanvas.LayoutTransform = st;
+            }
+
             if (e.Delta > 0)
-                rt.ScaleX = rt.ScaleY *= ScaleRate;
-            else if (rt.ScaleX > 1.0)
-                rt.ScaleX = rt.ScaleY /= ScaleRate;
+            {
+                st.ScaleX = st.ScaleY = st.ScaleX * ScaleRate;
+                if (st.ScaleX > 64) st.ScaleX = st.ScaleY = 64;
+            }
+            else
+            {
+                st.ScaleX = st.ScaleY = st.ScaleX / ScaleRate;
+                if (st.ScaleX < 1) st.ScaleX = st.ScaleY = 1;
+            }
+            #region [this step is critical for offset]
+            MainScrollViewer.ScrollToHorizontalOffset(0);
+            MainScrollViewer.ScrollToVerticalOffset(0);
+            this.UpdateLayout();
+            #endregion
 
-            e.GetPosition(MainCanvas);
+            Vector offset = MainCanvas.TranslatePoint(mouseAtImage, MainScrollViewer) - mouseAtScrollViewer;
+            MainScrollViewer.ScrollToHorizontalOffset(offset.X);
+            MainScrollViewer.ScrollToVerticalOffset(offset.Y);
+            this.UpdateLayout();
 
-            double MiddleWidth = e.GetPosition(MainCanvas).X / MainCanvas.RenderSize.Width;
-            double MiddleHeight = e.GetPosition(MainCanvas).Y / MainCanvas.RenderSize.Height;
-
-            scroller.ScrollToHorizontalOffset(scroller.ScrollableWidth * 0.5);// * MiddleWidth);
-            scroller.ScrollToVerticalOffset(scroller.ScrollableHeight * 0.5);// * MiddleHeight);
-
-            kk0.Content = e.GetPosition(MainCanvas);
-            kk1.Content = MainCanvas.RenderSize;
+            e.Handled = true;
         }
 
         Point MiddleMousePressPoint;
 
-        private void Scroller_MouseDown(object sender, MouseButtonEventArgs e)
+        private void MainScrollViewer_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.MiddleButton == MouseButtonState.Pressed)
-                MiddleMousePressPoint = e.GetPosition(scroller);
+                MiddleMousePressPoint = e.GetPosition(MainScrollViewer);
         }
 
-        private void Scroller_MouseMove(object sender, MouseEventArgs e)
+        private void MainScrollViewer_MouseMove(object sender, MouseEventArgs e)
         {
             Cursor = Cursors.Arrow;
             if (e.MiddleButton == MouseButtonState.Pressed)
             {
-                scroller.ScrollToHorizontalOffset(scroller.HorizontalOffset + MiddleMousePressPoint.X - e.GetPosition(scroller).X);
-                scroller.ScrollToVerticalOffset(scroller.VerticalOffset + MiddleMousePressPoint.Y - e.GetPosition(scroller).Y);
-                MiddleMousePressPoint = e.GetPosition(scroller);
+                MainScrollViewer.ScrollToHorizontalOffset(MainScrollViewer.HorizontalOffset + MiddleMousePressPoint.X - e.GetPosition(MainScrollViewer).X);
+                MainScrollViewer.ScrollToVerticalOffset(MainScrollViewer.VerticalOffset + MiddleMousePressPoint.Y - e.GetPosition(MainScrollViewer).Y);
+                MiddleMousePressPoint = e.GetPosition(MainScrollViewer);
                 Cursor = Cursors.ScrollAll;
             }
         }
 
-        private void Scroller_MouseUp(object sender, MouseButtonEventArgs e)
+        private void MainScrollViewer_MouseUp(object sender, MouseButtonEventArgs e)
         {
             Cursor = Cursors.Arrow;
         }
+
     }
 
 }
