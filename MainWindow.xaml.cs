@@ -1,7 +1,7 @@
-﻿using System.Windows;
+﻿using Microsoft.Win32;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace MapTest
 {
@@ -11,40 +11,6 @@ namespace MapTest
         public MainWindow()
         {
             InitializeComponent();
-
-            //Path p = BezierPath(new Point(0,0), new Point(1600, 0), new Point(-800, 450), new Point(800, 450), Brushes.Red);
-            //MainCanvas.Children.Add(p);
-
-            //p = BezierPath(new Point(0, 0), new Point(0, 450), new Point(800, 0), new Point(800, 450), Brushes.Blue);
-            //MainCanvas.Children.Add(p);
-
-            KelosOSM kosm = new KelosOSM();
-            kosm.LoadFile("../../Donostia.osm");
-            //kosm.AddPointsToCanvas(MainCanvas);
-            kosm.CreateBuildings(MainCanvas);
-        }
-
-        private Path BezierPath(Point p0, Point p1, Point p2, Point p3, Brush brush)
-        {
-            PathFigure pathFigure = new PathFigure();
-            pathFigure.StartPoint = p0;
-            BezierSegment bezier = new BezierSegment();
-            bezier.Point1 = p1;
-            bezier.Point2 = p2;
-            bezier.Point3 = p3;
-
-            PathSegmentCollection psc = new PathSegmentCollection();
-            psc.Add(bezier);
-            pathFigure.Segments = psc;
-
-            PathGeometry pathgeom = new PathGeometry();
-            pathgeom.Figures.Add(pathFigure);
-
-            Path p = new Path();
-            p.Stroke = brush;
-            p.Data = pathgeom;
-
-            return p;
         }
 
         void MainCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -98,6 +64,20 @@ namespace MapTest
             Cursor = Cursors.Arrow;
         }
 
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Multiselect = false,
+                Filter = "Osm files (*.osm)|*.osm",
+                InitialDirectory = System.Environment.CurrentDirectory
+            };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                KelosOSM kosm = new KelosOSM();
+                kosm.LoadFile(openFileDialog.FileName, MainCanvas);
+            }
+        }
     }
 
 }

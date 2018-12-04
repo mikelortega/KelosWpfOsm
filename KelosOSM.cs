@@ -1,9 +1,9 @@
 using GeoUtility.GeoSystem;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Shapes;
 using System.Xml.Linq;
 using System.Windows.Controls;
+using System.Linq;
 
 public class KelosOSM
 {
@@ -22,7 +22,7 @@ public class KelosOSM
         return position;
     }
 
-    public void LoadFile(string file_path)
+    public void LoadFile(string file_path, Canvas canvas)
     {
         if (!System.IO.File.Exists(file_path))
             return;
@@ -35,31 +35,50 @@ public class KelosOSM
         {
             if (node.Attribute("lon") != null && node.Attribute("lat") != null)
             {
-                Geographic geoloc = new Geographic(double.Parse(node.Attribute("lon").Value), double.Parse(node.Attribute("lat").Value));
+                double lon = double.Parse(node.Attribute("lon").Value);
+                double lat = double.Parse(node.Attribute("lat").Value);
+                Geographic geoloc = new Geographic(lon, lat);
                 m_NodeGeoLocs[long.Parse(node.Attribute("id").Value)] = geoloc;
+            }
+
+            double m_Longitude = m_NodeGeoLocs.Sum(item => item.Value.Longitude) / m_NodeGeoLocs.Count;
+            double m_Latitude = m_NodeGeoLocs.Sum(item => item.Value.Latitude) / m_NodeGeoLocs.Count;
+        }
+
+        CreateRoads(doc, canvas);
+        CreateBuildings(doc, canvas);
+    }
+
+    private void CreateRoads(XDocument doc, Canvas canvas)
+    {
+        foreach (var way in doc.Root.Elements("way"))
+        {
+            bool isRoad = false;
+            foreach (var tag in way.Elements("tag"))
+            {
+                if (tag.Attribute("k").Value == "highway")
+                    isRoad = true;
+            }
+
+            if (isRoad)
+            {
+                List<Point> points = new List<Point>();
+                foreach (var nd in way.Elements("nd"))
+                {
+                    Point point = NodePosition(long.Parse(nd.Attribute("ref").Value));
+                    point = new Point(canvas.Width * 0.5 - point.X * 0.5, canvas.Height * 0.5 + point.Y * 0.5);
+                    points.Add(point);
+                }
+
+                var road = OsmUIElements.CreateRoad(points, way);
+
+                canvas.Children.Add(road);
             }
         }
     }
 
-    public void AddPointsToCanvas(Canvas canvas)
+    private void CreateBuildings(XDocument doc, Canvas canvas)
     {
-        var myPolygon = new Polygon();
-        myPolygon.Stroke = System.Windows.Media.Brushes.Black;
-        myPolygon.Fill = System.Windows.Media.Brushes.LightSeaGreen;
-        myPolygon.StrokeThickness = 2;
-        myPolygon.HorizontalAlignment = HorizontalAlignment.Left;
-        myPolygon.VerticalAlignment = VerticalAlignment.Center;
-
-        foreach (var node in m_NodeGeoLocs)
-            myPolygon.Points.Add(NodePosition(node.Key));
-
-        canvas.Children.Add(myPolygon);
-    }
-
-    public void CreateBuildings(Canvas canvas)
-    {
-        XDocument doc = XDocument.Load(m_RelativePath);
-
         List<long> outerOuterBuildingRelations = new List<long>();
         foreach (var relation in doc.Root.Elements("relation"))
         {
@@ -79,46 +98,29 @@ public class KelosOSM
         foreach (var way in doc.Root.Elements("way"))
         {
             bool isBuilding = false;
-            float height = 10.0f;
             foreach (var tag in way.Elements("tag"))
             {
                 if (tag.Attribute("k").Value == "building")
                     isBuilding = true;
                 if (tag.Attribute("k").Value == "building:part")
                     isBuilding = true;
-                if (tag.Attribute("k").Value == "levels" || tag.Attribute("k").Value == "building:levels")
-                    height = float.Parse(tag.Attribute("v").Value) * 3.0f;
-                if (tag.Attribute("k").Value == "height")
-                    height = float.Parse(tag.Attribute("v").Value);
             }
 
             if (isBuilding || outerOuterBuildingRelations.Contains(long.Parse(way.Attribute("id").Value)))
             {
-                List<Point> positions = new List<Point>();
+                List<Point> points = new List<Point>();
                 foreach (var nd in way.Elements("nd"))
-                    positions.Add(NodePosition(long.Parse(nd.Attribute("ref").Value)));
+                {
+                    Point point = NodePosition(long.Parse(nd.Attribute("ref").Value));
+                    point = new Point(canvas.Width * 0.5 - point.X * 0.5, canvas.Height * 0.5 + point.Y * 0.5);
+                    points.Add(point);
+                }
 
-                CreateBuilding(positions, height, canvas);
+                var building = OsmUIElements.CreateBuilding(points, way);
+
+                canvas.Children.Add(building);
             }
         }
-    }
-
-    private void CreateBuilding(List<Point> positions, float height, Canvas canvas)
-    {
-        if (positions.Count < 2)
-            return;
-
-        var myPolygon = new Polygon();
-        myPolygon.Stroke = System.Windows.Media.Brushes.Black;
-        myPolygon.Fill = System.Windows.Media.Brushes.LightSeaGreen;
-        myPolygon.StrokeThickness = 2;
-        myPolygon.HorizontalAlignment = HorizontalAlignment.Left;
-        myPolygon.VerticalAlignment = VerticalAlignment.Center;
-
-        foreach (var point in positions)
-            myPolygon.Points.Add(new Point(canvas.Width * 0.5 - point.X * 0.5, canvas.Height * 0.5 + point.Y * 0.5));
-
-        canvas.Children.Add(myPolygon);
     }
 
 }
