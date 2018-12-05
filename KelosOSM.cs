@@ -9,7 +9,6 @@ public class KelosOSM
 {
     public double m_Longitude = -1.984656;
     public double m_Latitude = 43.322048;
-    public string m_RelativePath = "../../Donostia.osm";
     private Dictionary<long, Geographic> m_NodeGeoLocs;
 
     private Point NodePosition(long id)
@@ -22,14 +21,37 @@ public class KelosOSM
         return position;
     }
 
+    private Point NodePosition(double lon, double lat)
+    {
+        UTM GeoLoc = new Geographic(m_Longitude, m_Latitude).ConvertTo<UTM>();
+        UTM utm = new Geographic(lon, lat).ConvertTo<UTM>();
+        Point position = new Point();
+        position.X = GeoLoc.East - utm.East;
+        position.Y = GeoLoc.North - utm.North;
+        return position;
+    }
+
     public void LoadFile(string file_path, Canvas canvas)
     {
         if (!System.IO.File.Exists(file_path))
             return;
 
+        canvas.Children.Clear();
+
         XDocument doc = XDocument.Load(file_path);
 
         m_NodeGeoLocs = new Dictionary<long, Geographic>();
+
+        double minlat = double.Parse(doc.Root.Element("bounds").Attribute("minlat").Value);
+        double maxlat = double.Parse(doc.Root.Element("bounds").Attribute("maxlat").Value);
+        double minlon = double.Parse(doc.Root.Element("bounds").Attribute("minlon").Value);
+        double maxlon = double.Parse(doc.Root.Element("bounds").Attribute("maxlon").Value);
+
+        m_Longitude = (minlon + maxlon) * 0.5;
+        m_Latitude = (minlat + maxlat) * 0.5;
+
+        canvas.Width = NodePosition(minlon, m_Latitude).X;
+        canvas.Height = NodePosition(m_Longitude, minlat).Y;
 
         foreach (var node in doc.Root.Elements("node"))
         {
@@ -40,9 +62,6 @@ public class KelosOSM
                 Geographic geoloc = new Geographic(lon, lat);
                 m_NodeGeoLocs[long.Parse(node.Attribute("id").Value)] = geoloc;
             }
-
-            double m_Longitude = m_NodeGeoLocs.Sum(item => item.Value.Longitude) / m_NodeGeoLocs.Count;
-            double m_Latitude = m_NodeGeoLocs.Sum(item => item.Value.Latitude) / m_NodeGeoLocs.Count;
         }
 
         CreateRoads(doc, canvas);

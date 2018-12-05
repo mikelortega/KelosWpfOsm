@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -70,7 +71,7 @@ namespace MapTest
             {
                 Multiselect = false,
                 Filter = "Osm files (*.osm)|*.osm",
-                InitialDirectory = System.Environment.CurrentDirectory
+                InitialDirectory = Path.GetFullPath(Path.Combine(System.Environment.CurrentDirectory, @"..\..\SampleFiles"))
             };
             if (openFileDialog.ShowDialog() == true)
             {
