@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Xml.Linq;
 using System.Windows.Controls;
-using System.Linq;
+using System;
 
 public class KelosOSM
 {
@@ -40,18 +40,25 @@ public class KelosOSM
 
         XDocument doc = XDocument.Load(file_path);
 
-        m_NodeGeoLocs = new Dictionary<long, Geographic>();
+        double minlat, maxlat, minlon, maxlon;
+        minlat = minlon = double.MaxValue;
+        maxlat = maxlon = double.MinValue;
 
-        double minlat = double.Parse(doc.Root.Element("bounds").Attribute("minlat").Value);
-        double maxlat = double.Parse(doc.Root.Element("bounds").Attribute("maxlat").Value);
-        double minlon = double.Parse(doc.Root.Element("bounds").Attribute("minlon").Value);
-        double maxlon = double.Parse(doc.Root.Element("bounds").Attribute("maxlon").Value);
+        foreach (var bound in doc.Root.Elements("bounds"))
+        {
+            minlat = Math.Min(minlat, double.Parse(bound.Attribute("minlat").Value));
+            maxlat = Math.Max(maxlat, double.Parse(bound.Attribute("maxlat").Value));
+            minlon = Math.Min(minlon, double.Parse(bound.Attribute("minlon").Value));
+            maxlon = Math.Max(maxlon, double.Parse(bound.Attribute("maxlon").Value));
+        }
 
         m_Longitude = (minlon + maxlon) * 0.5;
         m_Latitude = (minlat + maxlat) * 0.5;
 
         canvas.Width = NodePosition(minlon, m_Latitude).X;
         canvas.Height = NodePosition(m_Longitude, minlat).Y;
+
+        m_NodeGeoLocs = new Dictionary<long, Geographic>();
 
         foreach (var node in doc.Root.Elements("node"))
         {
