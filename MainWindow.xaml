@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MapTest"
         mc:Ignorable="d"
-        Title="MainWindow" Height="568" Width="966">
+        Title="KelosWpfOsm" Height="568" Width="966">
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">

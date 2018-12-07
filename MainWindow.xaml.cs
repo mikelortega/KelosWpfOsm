@@ -25,7 +25,7 @@ namespace MapTest
 
             if (e.Delta > 0 && st.ScaleX < 64)
                 st.ScaleX = st.ScaleY = st.ScaleX * ScaleRate;
-            else if (st.ScaleX > 0.5)
+            else if (st.ScaleX > 0.2)
                 st.ScaleX = st.ScaleY = st.ScaleX / ScaleRate;
 
             MainScrollViewer.ScrollToHorizontalOffset(0);

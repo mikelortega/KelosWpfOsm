@@ -55,8 +55,10 @@ public class KelosOSM
         m_Longitude = (minlon + maxlon) * 0.5;
         m_Latitude = (minlat + maxlat) * 0.5;
 
-        canvas.Width = NodePosition(minlon, m_Latitude).X;
-        canvas.Height = NodePosition(m_Longitude, minlat).Y;
+        canvas.Width = NodePosition(minlon, m_Latitude).X - NodePosition(maxlon, m_Latitude).X;
+        canvas.Height = NodePosition(m_Longitude, minlat).Y - NodePosition(m_Longitude, maxlat).Y;
+
+        //TODO: Center or resize canvas transform
 
         m_NodeGeoLocs = new Dictionary<long, Geographic>();
 
@@ -92,7 +94,7 @@ public class KelosOSM
                 foreach (var nd in way.Elements("nd"))
                 {
                     Point point = NodePosition(long.Parse(nd.Attribute("ref").Value));
-                    point = new Point(canvas.Width * 0.5 - point.X * 0.5, canvas.Height * 0.5 + point.Y * 0.5);
+                    point = new Point(canvas.Width * 0.5 - point.X, canvas.Height * 0.5 + point.Y);
                     points.Add(point);
                 }
 
@@ -138,7 +140,7 @@ public class KelosOSM
                 foreach (var nd in way.Elements("nd"))
                 {
                     Point point = NodePosition(long.Parse(nd.Attribute("ref").Value));
-                    point = new Point(canvas.Width * 0.5 - point.X * 0.5, canvas.Height * 0.5 + point.Y * 0.5);
+                    point = new Point(canvas.Width * 0.5 - point.X, canvas.Height * 0.5 + point.Y);
                     points.Add(point);
                 }
 
