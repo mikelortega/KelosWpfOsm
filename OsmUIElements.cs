@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -9,6 +10,34 @@ public class OsmUIElements
 
     static public UIElement CreateRoad(List<Point> points, XElement way)
     {
+        double width = 3.0;
+        Color color = Colors.Black;
+        string[] pedestrianStrings = { "footway", "steps", "bridleway" };
+
+        foreach (var tag in way.Elements("tag"))
+        {
+            if (tag.Attribute("k").Value == "lanes")
+                width = double.Parse(tag.Attribute("v").Value) * 3.0;
+            if (tag.Attribute("k").Value == "highway")
+            {
+                if (tag.Attribute("v").Value == "cycleway")
+                {
+                    color = Colors.Blue;
+                    width = 1.0;
+                }
+                if (tag.Attribute("v").Value == "pedestrian")
+                {
+                    color = Colors.Gray;
+                    width = 1.0;
+                }
+                if (pedestrianStrings.Contains(tag.Attribute("v").Value))
+                {
+                    color = Colors.Red;
+                    width = 1.0;
+                }
+            }
+        }
+
         Polyline line = new Polyline();
         PointCollection collection = new PointCollection();
         foreach (Point p in points)
@@ -16,8 +45,8 @@ public class OsmUIElements
             collection.Add(p);
         }
         line.Points = collection;
-        line.Stroke = new SolidColorBrush(Colors.Black);
-        line.StrokeThickness = 1;
+        line.Stroke = new SolidColorBrush(color);
+        line.StrokeThickness = width;
 
         return line;
     }
