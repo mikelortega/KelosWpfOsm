@@ -4,6 +4,7 @@ using System.Windows;
 using System.Xml.Linq;
 using System.Windows.Controls;
 using System;
+using System.Linq;
 
 public class KelosOSM
 {
@@ -13,12 +14,7 @@ public class KelosOSM
 
     private Point NodePosition(long id)
     {
-        UTM GeoLoc = new Geographic(m_Longitude, m_Latitude).ConvertTo<UTM>();
-        Point position = new Point();
-        UTM utm = (UTM)m_NodeGeoLocs[id];
-        position.X = GeoLoc.East - utm.East;
-        position.Y = GeoLoc.North - utm.North;
-        return position;
+        return NodePosition(m_NodeGeoLocs[id].Longitude, m_NodeGeoLocs[id].Latitude);
     }
 
     private Point NodePosition(double lon, double lat)
@@ -35,8 +31,6 @@ public class KelosOSM
     {
         if (!System.IO.File.Exists(file_path))
             return;
-
-        canvas.Children.Clear();
 
         XDocument doc = XDocument.Load(file_path);
 
@@ -58,8 +52,6 @@ public class KelosOSM
         canvas.Width = NodePosition(minlon, m_Latitude).X - NodePosition(maxlon, m_Latitude).X;
         canvas.Height = NodePosition(m_Longitude, minlat).Y - NodePosition(m_Longitude, maxlat).Y;
 
-        //TODO: Center or resize canvas transform
-
         m_NodeGeoLocs = new Dictionary<long, Geographic>();
 
         foreach (var node in doc.Root.Elements("node"))
@@ -73,6 +65,7 @@ public class KelosOSM
             }
         }
 
+        CreateAreas(doc, canvas);
         CreateRoads(doc, canvas);
         CreateBuildings(doc, canvas);
     }
@@ -101,6 +94,36 @@ public class KelosOSM
                 var road = OsmUIElements.CreateRoad(points, way);
 
                 canvas.Children.Add(road);
+            }
+        }
+    }
+
+    private void CreateAreas(XDocument doc, Canvas canvas)
+    {
+        string[] areaStrings = { "area", "leisure" };
+
+        foreach (var way in doc.Root.Elements("way"))
+        {
+            bool isArea = false;
+            foreach (var tag in way.Elements("tag"))
+            {
+                if (areaStrings.Contains(tag.Attribute("k").Value))
+                    isArea = true;
+            }
+
+            if (isArea)
+            {
+                List<Point> points = new List<Point>();
+                foreach (var nd in way.Elements("nd"))
+                {
+                    Point point = NodePosition(long.Parse(nd.Attribute("ref").Value));
+                    point = new Point(canvas.Width * 0.5 - point.X, canvas.Height * 0.5 + point.Y);
+                    points.Add(point);
+                }
+
+                var area = OsmUIElements.CreateArea(points, way);
+
+                canvas.Children.Add(area);
             }
         }
     }

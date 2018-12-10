@@ -75,8 +75,14 @@ namespace MapTest
             };
             if (openFileDialog.ShowDialog() == true)
             {
+                MainCanvas.Children.Clear();
+
                 KelosOSM kosm = new KelosOSM();
                 kosm.LoadFile(openFileDialog.FileName, MainCanvas);
+
+                //TODO: Calculate transform to show full screen
+                ScaleTransform st = MainCanvas.LayoutTransform as ScaleTransform;
+                st.ScaleX = st.ScaleY = 0.3;
             }
         }
     }

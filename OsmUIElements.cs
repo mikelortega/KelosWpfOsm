@@ -77,4 +77,44 @@ public class OsmUIElements
         return myPolygon;
     }
 
+
+    static public UIElement CreateArea(List<Point> points, XElement way)
+    {
+        if (points.Count < 2)
+            return null;
+
+        var myPolygon = new Polygon
+        {
+            Stroke = Brushes.Black,
+            Fill = Brushes.Gray,
+            StrokeThickness = 0,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        Color color = Colors.Gray;
+
+        foreach (var tag in way.Elements("tag"))
+        {
+            if (tag.Attribute("k").Value == "name")
+                myPolygon.ToolTip = tag.Attribute("v").Value;
+            if (tag.Attribute("k").Value == "landuse")
+            {
+                if (tag.Attribute("v").Value == "grass")
+                    color = Colors.Green;
+            }
+            if (tag.Attribute("k").Value == "leisure")
+            {
+                if (tag.Attribute("v").Value == "garden")
+                    color = Colors.Green;
+            }
+        }
+
+        myPolygon.Fill = new SolidColorBrush(color);
+
+        foreach (var point in points)
+            myPolygon.Points.Add(point);
+
+        return myPolygon;
+    }
 }
