@@ -146,7 +146,8 @@ public class KelosOSM
 
                 var building = OsmUIElements.CreateBuilding(points, way);
 
-                canvas.Children.Add(building);
+                if (building != null)
+                    canvas.Children.Add(building);
             }
         }
     }
