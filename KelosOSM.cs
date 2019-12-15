@@ -1,4 +1,3 @@
-using GeoUtility.GeoSystem;
 using System.Collections.Generic;
 using System.Windows;
 using System.Xml.Linq;
@@ -10,20 +9,16 @@ public class KelosOSM
 {
     public double m_Longitude = -1.984656;
     public double m_Latitude = 43.322048;
-    private Dictionary<long, Geographic> m_NodeGeoLocs;
+    LatLngUTMConverter m_Converter = new LatLngUTMConverter();
+    LatLngUTMConverter.UTMResult m_UTM;
+
+    private Dictionary<long, LatLngUTMConverter.UTMResult> m_NodeGeoLocs;
 
     private Point NodePosition(long id)
     {
-        return NodePosition(m_NodeGeoLocs[id].Longitude, m_NodeGeoLocs[id].Latitude);
-    }
-
-    private Point NodePosition(double lon, double lat)
-    {
-        UTM GeoLoc = new Geographic(m_Longitude, m_Latitude).ConvertTo<UTM>();
-        UTM utm = new Geographic(lon, lat).ConvertTo<UTM>();
         Point position = new Point();
-        position.X = GeoLoc.East - utm.East;
-        position.Y = GeoLoc.North - utm.North;
+        position.X = m_UTM.Easting - m_NodeGeoLocs[id].Easting;
+        position.Y = m_UTM.Northing - m_NodeGeoLocs[id].Northing;
         return position;
     }
 
@@ -31,6 +26,8 @@ public class KelosOSM
     {
         if (!System.IO.File.Exists(file_path))
             return;
+
+        m_UTM = m_Converter.LatLngToUtm(m_Latitude, m_Longitude);
 
         System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
@@ -51,10 +48,10 @@ public class KelosOSM
         m_Longitude = (minlon + maxlon) * 0.5;
         m_Latitude = (minlat + maxlat) * 0.5;
 
-        canvas.Width = NodePosition(minlon, m_Latitude).X - NodePosition(maxlon, m_Latitude).X;
-        canvas.Height = NodePosition(m_Longitude, minlat).Y - NodePosition(m_Longitude, maxlat).Y;
+        canvas.Width = m_Converter.LatLngToUtm(m_Latitude, maxlon).Easting - m_Converter.LatLngToUtm(m_Latitude, minlon).Easting;
+        canvas.Height = m_Converter.LatLngToUtm(maxlat, m_Longitude).Northing - m_Converter.LatLngToUtm(minlat, m_Longitude).Northing;
 
-        m_NodeGeoLocs = new Dictionary<long, Geographic>();
+        m_NodeGeoLocs = new Dictionary<long, LatLngUTMConverter.UTMResult>();
 
         foreach (var node in doc.Root.Elements("node"))
         {
@@ -62,7 +59,7 @@ public class KelosOSM
             {
                 double lon = double.Parse(node.Attribute("lon").Value);
                 double lat = double.Parse(node.Attribute("lat").Value);
-                Geographic geoloc = new Geographic(lon, lat);
+                LatLngUTMConverter.UTMResult geoloc = m_Converter.LatLngToUtm(lat, lon);
                 m_NodeGeoLocs[long.Parse(node.Attribute("id").Value)] = geoloc;
             }
         }
