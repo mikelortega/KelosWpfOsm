@@ -32,6 +32,8 @@ public class KelosOSM
         if (!System.IO.File.Exists(file_path))
             return;
 
+        System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
         XDocument doc = XDocument.Load(file_path);
 
         double minlat, maxlat, minlon, maxlon;
