@@ -58,8 +58,8 @@ public class OsmUIElements
 
         var myPolygon = new Polygon
         {
-            Stroke = Brushes.Black,
-            Fill = Brushes.LightSeaGreen,
+            Stroke = new SolidColorBrush(Color.FromRgb(158, 136, 118)),
+            Fill = new SolidColorBrush(Color.FromRgb(196, 182, 171)),
             StrokeThickness = 1,
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center

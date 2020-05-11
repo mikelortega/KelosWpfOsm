@@ -13,8 +13,8 @@
                     <MenuItem Header="_Open" Click="MenuItem_Click"/>
                 </MenuItem>
             </Menu>
-            <ScrollViewer x:Name="MainScrollViewer" Margin="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#FFFFE386" MouseMove="MainScrollViewer_MouseMove" MouseDown="MainScrollViewer_MouseDown" PanningMode="Both" MouseUp="MainScrollViewer_MouseUp">
-                <Canvas x:Name="MainCanvas" HorizontalAlignment="Center" Height="450" VerticalAlignment="Center" Width="800" Background="#FFEED6D6" MouseWheel="MainCanvas_MouseWheel" Margin="0">
+            <ScrollViewer x:Name="MainScrollViewer" Margin="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MouseMove="MainScrollViewer_MouseMove" MouseDown="MainScrollViewer_MouseDown" PanningMode="Both" MouseUp="MainScrollViewer_MouseUp">
+                <Canvas x:Name="MainCanvas" HorizontalAlignment="Center" Height="450" VerticalAlignment="Center" Width="800" Background="#FFF2EFE9" MouseWheel="MainCanvas_MouseWheel" Margin="0">
                     <Canvas.LayoutTransform>
                         <ScaleTransform x:Name="rt"/>
                     </Canvas.LayoutTransform>
