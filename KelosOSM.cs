@@ -78,6 +78,8 @@ public class KelosOSM
             {
                 if (tag.Attribute("k").Value == "highway")
                     isRoad = true;
+                if (tag.Attribute("k").Value == "aeroway")
+                    isRoad = true;
             }
 
             if (isRoad)
